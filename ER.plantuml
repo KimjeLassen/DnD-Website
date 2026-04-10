@@ -1,0 +1,53 @@
+@startuml
+entity Quest {
+    id UUID,
+    name String
+}
+entity QuestStep {
+    id UUID,
+    quest_id UUID,
+    text String,
+    can_see Boolean,
+}
+entity QuestRewards {
+    id UUID,
+    quest_step_id UUID,
+    rewards String,
+}
+entity Items {
+    id UUID,
+    name String,
+    description String,
+    image String,
+    price Int,
+    attunement Boolean,
+    type String,
+}
+entity Campaigns {
+    id UUID,
+    name String,
+}
+entity Users {
+    id UUID,
+    name String,
+    password String,
+}
+entity Characters {
+    id UUID,
+    name String,
+    user_id UUID,
+    campaign_id UUID,
+    notes String,
+}
+entity CharacterSecrets {
+    id UUID,
+    character_id UUID,
+    secret String,
+    written_by UUID,
+}
+entity NPCs {
+    id UUID,
+    name String,
+    description String,
+    image String,
+}
