@@ -3,16 +3,22 @@ entity Quest {
     id UUID,
     name String
 }
-entity QuestStep {
+entity Quest_Step {
     id UUID,
     quest_id UUID,
     text String,
     can_see Boolean,
 }
-entity QuestRewards {
+entity Quest_Rewards {
     id UUID,
     quest_step_id UUID,
-    rewards String,
+    reward_id UUID,
+}
+entity QuestNotes {
+    id UUID,
+    quest_id UUID,
+    user_id UUID,
+    text String,
 }
 entity Items {
     id UUID,
@@ -23,23 +29,13 @@ entity Items {
     attunement Boolean,
     type String,
 }
-entity Campaigns {
-    id UUID,
-    name String,
-}
-entity Users {
-    id UUID,
-    name String,
-    password String,
-}
 entity Characters {
     id UUID,
     name String,
     user_id UUID,
-    campaign_id UUID,
     notes String,
 }
-entity CharacterSecrets {
+entity Character_Secrets {
     id UUID,
     character_id UUID,
     secret String,
@@ -51,3 +47,32 @@ entity NPCs {
     description String,
     image String,
 }
+entity NPC_Comments {
+    id UUID,
+    npc_id UUID,
+    user_id UUID,
+    text String,
+}
+entity Users {
+    id UUID,
+    name String,
+    role_id UUID,
+    password String
+}
+entity Roles {
+    id UUID,
+    name String,
+}
+
+' Relationships
+Quest ||--o{ Quest_Step : "contains"
+Quest_Step ||--o{ Quest_Rewards : "has"
+Quest_Rewards ||--o{ Items : "has"
+Quest ||--o{ QuestNotes : "has"
+Characters ||--o{ Character_Secrets : "has"
+NPCs ||--o{ NPC_Comments : "has"
+Roles ||--o{ Users : "has"
+Users ||--o{ QuestNotes : "writes"
+Users ||--o{ Characters : "creates"
+Users ||--o{ Character_Secrets : "writes"
+Users ||--o{ NPC_Comments : "writes"
