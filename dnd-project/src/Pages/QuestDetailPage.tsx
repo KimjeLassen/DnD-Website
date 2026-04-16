@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Quest, QuestStep } from '../types';
 import { questsAPI, questStepsAPI } from '../services/api';
+import { QuestStepModal } from '../components/QuestStepModal';
 import '../styles/questDetail.css';
 
 export function QuestDetailPage() {
@@ -11,6 +12,8 @@ export function QuestDetailPage() {
   const [steps, setSteps] = useState<QuestStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreatingStep, setIsCreatingStep] = useState(false);
 
   useEffect(() => {
     const loadQuestDetails = async () => {
@@ -33,6 +36,20 @@ export function QuestDetailPage() {
 
     loadQuestDetails();
   }, [id]);
+
+  const handleCreateStep = async (text: string, canSee: boolean) => {
+    if (!id) return;
+
+    try {
+      setIsCreatingStep(true);
+      const newStep = await questStepsAPI.create(id, text, canSee);
+      setSteps([...steps, newStep].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)));
+    } catch (err) {
+      throw err;
+    } finally {
+      setIsCreatingStep(false);
+    }
+  };
 
   if (loading) return <div className="quest-detail-container"><div>Loading quest details...</div></div>;
 
@@ -69,7 +86,15 @@ export function QuestDetailPage() {
       </div>
 
       <div className="quest-steps-section">
-        <h2>Quest Steps</h2>
+        <div className="quest-steps-header">
+          <h2>Quest Steps</h2>
+          <button 
+            className="btn-add-step"
+            onClick={() => setIsModalOpen(true)}
+          >
+            + Add Step
+          </button>
+        </div>
         {steps.length === 0 ? (
           <p className="no-steps">No steps added to this quest yet.</p>
         ) : (
@@ -86,6 +111,13 @@ export function QuestDetailPage() {
           </div>
         )}
       </div>
+
+      <QuestStepModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateStep}
+        isLoading={isCreatingStep}
+      />
     </div>
   );
 }

@@ -74,40 +74,43 @@
   font-weight: 600;
 }
 
+.quest-steps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.quest-steps-header h2 {
+  margin: 0;
+}
+
+.btn-add-step {
+  padding: 0.75rem 1.5rem;
+  background-color: #d4a574;
+  color: #2c1810;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-add-step:hover {
+  background-color: #c1945d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+}
+
+.btn-add-step:active {
+  transform: translateY(0);
+}
+
 .steps-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.step-card {
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
-  border-left: 4px solid #667eea;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.step-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateX(4px);
-}
-
-.step-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 1.3rem;
-  flex-shrink: 0;
 }
 
 .step-content {
@@ -153,4 +156,8 @@
   border-radius: 6px;
   margin-bottom: 1rem;
   font-weight: 500;
+}
+.step-number {
+    color: black;
+    font-weight: bold;
 }
