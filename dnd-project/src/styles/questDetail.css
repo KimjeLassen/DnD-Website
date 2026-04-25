@@ -23,8 +23,8 @@
   padding: 0.5rem 1rem;
   margin-bottom: 2rem;
   background-color: transparent;
-  color: #d4a574;
-  border: 2px solid #d4a574;
+  color: #818C78;
+  border: 2px solid #818C78;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
@@ -33,8 +33,8 @@
 }
 
 .back-button:hover {
-  background-color: #d4a574;
-  color: #2c1810;
+  background-color: #818C78;
+  color: #4E635E;
   transform: none;
 }
 
@@ -44,13 +44,13 @@
 
 .quest-detail-header {
   margin-bottom: 3rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #A6B49E;
   padding-bottom: 1.5rem;
 }
 
 .quest-detail-header h1 {
   font-size: 2.5rem;
-  color: #333;
+  color: #4E635E;
   margin: 0 0 1rem 0;
   font-weight: 700;
 }
@@ -59,7 +59,7 @@
   display: flex;
   gap: 2rem;
   font-size: 0.95rem;
-  color: #666;
+  color: #4E635E;
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
 
 .quest-steps-section h2 {
   font-size: 1.8rem;
-  color: #333;
+  color: #4E635E;
   margin: 0 0 1.5rem 0;
   font-weight: 600;
 }
@@ -87,8 +87,8 @@
 
 .btn-add-step {
   padding: 0.75rem 1.5rem;
-  background-color: #d4a574;
-  color: #2c1810;
+  background-color: #4E635E;
+  color: #E2E0C8;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -98,9 +98,9 @@
 }
 
 .btn-add-step:hover {
-  background-color: #c1945d;
+  background-color: #818C78;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+  box-shadow: 0 4px 12px rgba(129, 140, 120, 0.3);
 }
 
 .btn-add-step:active {
@@ -113,6 +113,23 @@
   gap: 1rem;
 }
 
+.step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #E2E0C8;
+  border: 1px solid #A6B49E;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.step-card:hover {
+  background-color: #E2E0C8;
+  border-color: #818C78;
+  box-shadow: 0 2px 8px rgba(129, 140, 120, 0.15);
+}
+
 .step-content {
   flex: 1;
   display: flex;
@@ -122,21 +139,21 @@
 
 .step-content p {
   margin: 0;
-  color: #333;
+  color: #4E635E;
   line-height: 1.6;
   font-size: 1rem;
 }
 
 .visible-badge {
   display: inline-block;
-  background-color: #d4edda;
-  color: #155724;
+  background-color: rgba(166, 180, 158, 0.2);
+  color: #4E635E;
   padding: 0.35rem 0.75rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
   width: fit-content;
-  border: 1px solid #c3e6cb;
+  border: 1px solid #A6B49E;
 }
 
 .no-steps {
@@ -150,14 +167,43 @@
 
 .error-message {
   padding: 1rem;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: rgba(129, 140, 120, 0.2);
+  color: #4E635E;
+  border: 1px solid #818C78;
   border-radius: 6px;
   margin-bottom: 1rem;
   font-weight: 500;
 }
 .step-number {
-    color: black;
-    font-weight: bold;
+  color: #818C78;
+  font-weight: bold;
+  font-size: 1.3rem;
+  min-width: 2rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.btn-delete-step {
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(129, 140, 120, 0.2);
+  color: #818C78;
+  border: 1px solid #818C78;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.btn-delete-step:hover {
+  background-color: #818C78;
+  border-color: #818C78;
+  color: #4E635E;
+  transform: scale(1.1);
+}
+
+.btn-delete-step:active {
+  transform: scale(0.95);
 }

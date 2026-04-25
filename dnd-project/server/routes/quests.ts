@@ -99,6 +99,23 @@ router.post('/:id/steps', async (req: Request, res: Response) => {
   }
 })
 
+// DELETE quest step
+router.delete('/:id/steps/:stepId', async (req: Request, res: Response) => {
+  try {
+    const { stepId } = req.params
+    if (!stepId) {
+      return res.status(400).json({ error: 'Quest step ID is required' })
+    }
+    const deleted = await questStepQueries.delete(stepId)
+    if (!deleted) {
+      return res.status(404).json({ error: 'Quest step not found' })
+    }
+    res.json({ message: 'Quest step deleted successfully' })
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete quest step', details: error })
+  }
+})
+
 // GET quest notes
 router.get('/:id/notes', async (req: Request, res: Response) => {
   try {

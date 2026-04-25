@@ -222,7 +222,7 @@ export const questStepQueries = {
 
   async getByQuestId(quest_id: string): Promise<QuestStep[]> {
     const result = await query(
-      'SELECT text FROM Quest_Step WHERE quest_id = $1 AND can_see = true ORDER BY display_order ASC',
+      'SELECT id, text, display_order FROM Quest_Step WHERE quest_id = $1 AND can_see = true ORDER BY display_order ASC',
       [quest_id]
     )
     return result.rows

@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { DMProvider } from './context/DMContext';
 import { HomePage } from './Pages/HomePage';
 import { QuestsPage } from './Pages/QuestsPage';
 import { NPCsPage } from './Pages/NPCsPage';
 import { CharactersPage } from './Pages/CharactersPage';
 import { QuestDetailPage } from './Pages/QuestDetailPage';
+import { DMPasswordModal } from './components/DMPasswordModal';
 import './App.css';
 
 function AppContent() {
   const navigate = useNavigate();
+  const [isDMModalOpen, setIsDMModalOpen] = useState(false);
 
   return (
     <div className="app">
@@ -41,9 +45,14 @@ function AppContent() {
         </Routes>
       </main>
 
-      <footer className="footer">
+      <footer className="footer" onClick={() => setIsDMModalOpen(true)} style={{ cursor: 'pointer' }}>
         <p>&copy; 2024 D&D Campaign Manager. Created with React & TypeScript.</p>
       </footer>
+
+      <DMPasswordModal
+        isOpen={isDMModalOpen}
+        onClose={() => setIsDMModalOpen(false)}
+      />
     </div>
   );
 }
@@ -51,7 +60,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <DMProvider>
+        <AppContent />
+      </DMProvider>
     </BrowserRouter>
   );
 }

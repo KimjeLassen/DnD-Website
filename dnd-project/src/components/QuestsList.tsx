@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import type { Quest } from '../types';
 import { questsAPI } from '../services/api';
 import '../styles/entities.css';
+import { useDM } from '../context/DMContext';
 
 export function QuestsList() {
   const navigate = useNavigate();
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newQuest, setNewQuest] = useState('');
+  const [newQuest, setNewQuest] = useState("");
+  const { isDM } = useDM();
 
   useEffect(() => {
     loadQuests();
@@ -22,7 +24,7 @@ export function QuestsList() {
       setQuests(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load quests');
+      setError(err instanceof Error ? err.message : "Failed to load quests");
     } finally {
       setLoading(false);
     }
@@ -35,18 +37,18 @@ export function QuestsList() {
     try {
       const created = await questsAPI.create({ name: newQuest });
       setQuests([...quests, created]);
-      setNewQuest('');
+      setNewQuest("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create quest');
+      setError(err instanceof Error ? err.message : "Failed to create quest");
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await questsAPI.delete(id);
-      setQuests(quests.filter(quest => quest.id !== id));
+      setQuests(quests.filter((quest) => quest.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete quest');
+      setError(err instanceof Error ? err.message : "Failed to delete quest");
     }
   };
 
@@ -63,7 +65,7 @@ export function QuestsList() {
           type="text"
           placeholder="Quest Name"
           value={newQuest}
-          onChange={e => setNewQuest(e.target.value)}
+          onChange={(e) => setNewQuest(e.target.value)}
           required
         />
         <button type="submit">Add Quest</button>
@@ -73,10 +75,15 @@ export function QuestsList() {
         {quests.length === 0 ? (
           <p>No quests yet. Create one to get started!</p>
         ) : (
-          quests.map(quest => (
-            <div key={quest.id} className="entity-card quest-card" onClick={() => navigate(`/quests/${quest.id}`)}>
+          quests.map((quest) => (
+            <div
+              key={quest.id}
+              className="entity-card quest-card"
+              onClick={() => navigate(`/quests/${quest.id}`)}
+            >
               <div className="entity-header">
                 <h3>{quest.name}</h3>
+              {isDM &&(
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -85,7 +92,7 @@ export function QuestsList() {
                   className="delete-btn"
                 >
                   Delete
-                </button>
+                </button>)}
               </div>
               <p className="quest-meta">
                 Created: {new Date(quest.created_at).toLocaleDateString()}

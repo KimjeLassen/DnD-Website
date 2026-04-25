@@ -1,0 +1,240 @@
+/* D&D Website Color Palette
+   ====================================
+   This file documents and centralizes all color definitions.
+   All colors are defined as CSS custom properties (variables) for easy switching.
+   
+   Primary Palette:
+   - Primary Dark (Dark Forest Green): #0A3323
+   - Primary Green (Sage/Olive): #839958
+   - Primary Light (Cream/Beige): #F7F4D5
+   - Primary Accent (Terracotta/Mauve): #D3968C
+   - Primary Teal (Dark Cyan): #105666
+*/
+
+:root {
+  /* ===== Core Color Definitions ===== */
+  --primary-dark: #4E635E;
+  --primary-green: #A6B49E;
+  --primary-light: #E2E0C8;
+  --primary-accent: #818C78;
+  --primary-teal: #818C78;
+
+  /* ===== Semantic Color Assignments ===== */
+  /* Text Colors */
+  --text-primary: var(--primary-dark);
+  --text-light: var(--primary-light);
+  --text-muted: var(--primary-green);
+
+  /* Background Colors */
+  --bg-primary: var(--primary-light);
+  --bg-dark: var(--primary-dark);
+  --bg-accent: var(--primary-teal);
+
+  /* Border Colors */
+  --border-primary: var(--primary-green);
+  --border-accent: var(--primary-accent);
+
+  /* Interactive Elements */
+  --button-primary: var(--primary-accent);
+  --button-secondary: var(--primary-green);
+  --button-dark: var(--primary-dark);
+  --button-text-dark: var(--primary-dark);
+  --button-text-light: var(--primary-light);
+
+  /* Status & Feedback */
+  --status-hover: var(--primary-teal);
+  --status-error: var(--primary-accent);
+  --status-success: var(--primary-green);
+
+  /* Transparency Variants */
+  --accent-alpha-10: rgba(211, 150, 140, 0.1);
+  --accent-alpha-15: rgba(211, 150, 140, 0.15);
+  --accent-alpha-20: rgba(211, 150, 140, 0.2);
+  --accent-alpha-30: rgba(211, 150, 140, 0.3);
+  --accent-alpha-50: rgba(211, 150, 140, 0.5);
+
+  --teal-alpha-15: rgba(16, 86, 102, 0.15);
+  --teal-alpha-20: rgba(16, 86, 102, 0.2);
+  --teal-alpha-30: rgba(16, 86, 102, 0.3);
+
+  --green-alpha-20: rgba(131, 153, 88, 0.2);
+
+  --dark-alpha-30: rgba(10, 51, 35, 0.3);
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: var(--primary-light);
+    --text-light: var(--primary-light);
+    --bg-primary: var(--primary-dark);
+    --bg-accent: var(--primary-dark);
+    --button-text-dark: var(--primary-light);
+  }
+}
+
+/* ===== UTILITY CLASSES FOR COLOR SWAPPING ===== */
+
+/* Text Colors */
+.text-primary {
+  color: var(--primary-dark);
+}
+
+.text-accent {
+  color: var(--primary-accent);
+}
+
+.text-teal {
+  color: var(--primary-teal);
+}
+
+.text-green {
+  color: var(--primary-green);
+}
+
+.text-light {
+  color: var(--primary-light);
+}
+
+/* Background Colors */
+.bg-primary {
+  background-color: var(--primary-light);
+}
+
+.bg-dark {
+  background-color: var(--primary-dark);
+}
+
+.bg-accent {
+  background-color: var(--primary-accent);
+}
+
+.bg-teal {
+  background-color: var(--primary-teal);
+}
+
+.bg-green {
+  background-color: var(--primary-green);
+}
+
+/* Border Colors */
+.border-primary {
+  border-color: var(--primary-green);
+}
+
+.border-accent {
+  border-color: var(--primary-accent);
+}
+
+.border-teal {
+  border-color: var(--primary-teal);
+}
+
+.border-dark {
+  border-color: var(--primary-dark);
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--primary-dark);
+  color: var(--primary-light);
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-accent);
+  color: var(--primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--primary-dark);
+  color: var(--primary-light);
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-accent);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-accent);
+  border: 2px solid var(--primary-accent);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-accent);
+  color: var(--primary-dark);
+}
+
+/* Accent Backgrounds */
+.accent-bg-light {
+  background-color: var(--accent-alpha-20);
+  border: 1px solid var(--primary-accent);
+}
+
+.accent-bg-medium {
+  background-color: var(--accent-alpha-30);
+  border: 1px solid var(--primary-accent);
+}
+
+/* Status Messages */
+.status-error {
+  background-color: var(--accent-alpha-20);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-accent);
+}
+
+.status-success {
+  background-color: var(--green-alpha-20);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-green);
+}
+
+/* Card & Container Styles */
+.card {
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-green);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px var(--teal-alpha-15);
+  border-color: var(--primary-accent);
+}
+
+.card-dark {
+  background-color: var(--primary-dark);
+  border: 1px solid var(--primary-teal);
+  color: var(--primary-light);
+}
+
+/* Gradient Backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-teal) 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--primary-accent) 0%, var(--primary-teal) 100%);
+}
+
+.gradient-light {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-light) 100%);
+}
