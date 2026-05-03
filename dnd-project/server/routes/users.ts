@@ -1,7 +1,36 @@
 import { Router, type Request, type Response } from 'express'
 import { userQueries } from '../queries'
+import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts' 
 
 const router = Router()
+
+// POST login - authenticate user
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { name, password } = req.body
+    if (!name || !password) {
+      return res.status(400).json({ error: 'Name and password are required' })
+    }
+
+    const user = await userQueries.login(name)
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' })
+    }
+
+    if (!compareSync(password, user.password)) {
+      return res.status(401).json({ error: 'Invalid username or password' })
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      role: user.role
+    })
+  } catch (error) {
+    res.status(500).json({ error: 'Login failed', details: error })
+  }
+})
 
 // GET all users
 router.get('/', async (_req: Request, res: Response) => {
@@ -34,7 +63,9 @@ router.post('/', async (req: Request, res: Response) => {
     if (!name || !password || !role_id) {
       return res.status(400).json({ error: 'Name, password, and role_id are required' })
     }
-    const user = await userQueries.create(name, password, role_id)
+    const salt = genSaltSync(10)
+    const hashedPassword = hashSync(password, salt)
+    const user = await userQueries.create(name, hashedPassword, role_id)
     res.status(201).json(user)
   } catch (error) {
     res.status(500).json({ error: 'Failed to create user', details: error })

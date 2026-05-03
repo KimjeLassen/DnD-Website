@@ -10,9 +10,7 @@ export interface User {
   id: string
   name: string
   password: string
-  role_id: string
-  created_at: string
-  updated_at: string
+  role: string
 }
 
 export interface Quest {

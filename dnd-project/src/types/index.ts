@@ -9,9 +9,7 @@ export interface Role {
 export interface User {
   id: string;
   name: string;
-  role_id: string;
-  created_at: string;
-  updated_at: string;
+  role: string;
 }
 
 export interface Campaign {

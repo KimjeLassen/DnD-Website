@@ -56,6 +56,11 @@ export const usersAPI = {
     }),
   delete: (id: string) =>
     apiCall<void>(`/users/${id}`, { method: 'DELETE' }),
+  login: (name: string, password: string) =>
+    apiCall<User>('/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ name, password }),
+    }),
 };
 
 // Roles API

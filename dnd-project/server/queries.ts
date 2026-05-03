@@ -88,6 +88,13 @@ export const userQueries = {
     const result = await query('DELETE FROM Users WHERE id = $1', [id])
     return result.rowCount > 0
   },
+  async login(name: string): Promise<User | null> {
+    const result = await query(
+      'SELECT Users.id, Users.name, Users.password, Roles.name as role FROM Users JOIN Roles ON Users.role_id = Roles.id WHERE Users.name = $1 LIMIT 1',
+      [name]
+    )
+    return result.rows[0] || null
+  }
 }
 
 // ============================================================================
