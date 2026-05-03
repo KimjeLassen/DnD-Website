@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Character, Campaign, User } from '../types';
 import { charactersAPI, campaignsAPI, usersAPI } from '../services/api';
 import '../styles/entities.css';
+import { useDM } from '../context/DMContext';
 
 export function CharactersList() {
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -10,11 +11,12 @@ export function CharactersList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newCharacter, setNewCharacter] = useState({
-    name: '',
-    user_id: '',
-    campaign_id: '',
-    notes: '',
+    name: "",
+    user_id: "",
+    campaign_id: "",
+    notes: "",
   });
+  const { isDM } = useDM();
 
   useEffect(() => {
     loadData();
@@ -33,7 +35,7 @@ export function CharactersList() {
       setUsers(usrs);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -51,31 +53,35 @@ export function CharactersList() {
         notes: newCharacter.notes || undefined,
       });
       setCharacters([...characters, created]);
-      setNewCharacter({ name: '', user_id: '', campaign_id: '', notes: '' });
+      setNewCharacter({ name: "", user_id: "", campaign_id: "", notes: "" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create character');
+      setError(
+        err instanceof Error ? err.message : "Failed to create character",
+      );
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await charactersAPI.delete(id);
-      setCharacters(characters.filter(char => char.id !== id));
+      setCharacters(characters.filter((char) => char.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete character');
+      setError(
+        err instanceof Error ? err.message : "Failed to delete character",
+      );
     }
   };
 
   const getCampaignName = (campaignId?: string) => {
-    if (!campaignId) return 'No Campaign';
-    return campaigns.find(c => c.id === campaignId)?.name || 'Unknown';
+    if (!campaignId) return "No Campaign";
+    return campaigns.find((c) => c.id === campaignId)?.name || "Unknown";
   };
 
   const getUserName = (userId: string) => {
-    return users.find(u => u.id === userId)?.name || 'Unknown';
+    return users.find((u) => u.id === userId)?.name || "Unknown";
   };
 
-  if (loading) return <div>Loading characters...</div>;
+  if (loading) return <div style={{color: "black"}}>Loading characters...</div>;
 
   return (
     <div className="entities-container">
@@ -83,50 +89,58 @@ export function CharactersList() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <form onSubmit={handleCreate} className="create-form">
-        <input
-          type="text"
-          placeholder="Character Name"
-          value={newCharacter.name}
-          onChange={e => setNewCharacter({ ...newCharacter, name: e.target.value })}
-          required
-        />
-        <select
-          value={newCharacter.user_id}
-          onChange={e => setNewCharacter({ ...newCharacter, user_id: e.target.value })}
-          required
-        >
-          <option value="">Select a Player</option>
-          {users.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={newCharacter.campaign_id}
-          onChange={e => setNewCharacter({ ...newCharacter, campaign_id: e.target.value })}
-        >
-          <option value="">Select a Campaign (Optional)</option>
-          {campaigns.map(campaign => (
-            <option key={campaign.id} value={campaign.id}>
-              {campaign.name}
-            </option>
-          ))}
-        </select>
-        <textarea
-          placeholder="Character Notes"
-          value={newCharacter.notes}
-          onChange={e => setNewCharacter({ ...newCharacter, notes: e.target.value })}
-        />
-        <button type="submit">Add Character</button>
-      </form>
+      {isDM && (
+        <form onSubmit={handleCreate} className="create-form">
+          <input
+            type="text"
+            placeholder="Character Name"
+            value={newCharacter.name}
+            onChange={(e) =>
+              setNewCharacter({ ...newCharacter, name: e.target.value })
+            }
+            required
+          />
+          <select
+            value={newCharacter.user_id}
+            onChange={(e) =>
+              setNewCharacter({ ...newCharacter, user_id: e.target.value })
+            }
+            required
+          >
+            <option value="">Select a Player</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={newCharacter.campaign_id}
+            onChange={(e) =>
+              setNewCharacter({ ...newCharacter, campaign_id: e.target.value })
+            }
+          >
+            <option value="">Select a Campaign (Optional)</option>
+            {campaigns.map((campaign) => (
+              <option key={campaign.id} value={campaign.id}>
+                {campaign.name}
+              </option>
+            ))}
+          </select>
+          <textarea
+            placeholder="Character Notes"
+            value={newCharacter.notes}
+            onChange={(e) =>
+              setNewCharacter({ ...newCharacter, notes: e.target.value })
+            }
+          />
+          <button type="submit">Add Character</button>
+        </form>
+      )}
 
       <div className="entities-list">
-        {characters.length === 0 ? (
-          <p>No characters yet. Create one to get started!</p>
-        ) : (
-          characters.map(character => (
+        {(
+          characters.map((character) => (
             <div key={character.id} className="entity-card">
               <div className="entity-header">
                 <h3>{character.name}</h3>
@@ -141,7 +155,8 @@ export function CharactersList() {
                 <strong>Player:</strong> {getUserName(character.user_id)}
               </p>
               <p>
-                <strong>Campaign:</strong> {getCampaignName(character.campaign_id)}
+                <strong>Campaign:</strong>{" "}
+                {getCampaignName(character.campaign_id)}
               </p>
               {character.notes && (
                 <p>

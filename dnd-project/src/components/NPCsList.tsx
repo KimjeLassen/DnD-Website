@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import type { NPC } from '../types';
 import { npcsAPI } from '../services/api';
 import '../styles/entities.css';
+import { useDM } from '../context/DMContext';
 
 export function NPCsList() {
   const [npcs, setNpcs] = useState<NPC[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newNPC, setNewNPC] = useState({ name: '', description: '' });
+  const [newNPC, setNewNPC] = useState({ name: "", description: "" });
+  const { isDM } = useDM();
 
   useEffect(() => {
     loadNPCs();
@@ -20,7 +22,7 @@ export function NPCsList() {
       setNpcs(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load NPCs');
+      setError(err instanceof Error ? err.message : "Failed to load NPCs");
     } finally {
       setLoading(false);
     }
@@ -36,22 +38,22 @@ export function NPCsList() {
         description: newNPC.description || undefined,
       });
       setNpcs([...npcs, created]);
-      setNewNPC({ name: '', description: '' });
+      setNewNPC({ name: "", description: "" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create NPC');
+      setError(err instanceof Error ? err.message : "Failed to create NPC");
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await npcsAPI.delete(id);
-      setNpcs(npcs.filter(npc => npc.id !== id));
+      setNpcs(npcs.filter((npc) => npc.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete NPC');
+      setError(err instanceof Error ? err.message : "Failed to delete NPC");
     }
   };
 
-  if (loading) return <div>Loading NPCs...</div>;
+  if (loading) return <div style={{color: "black"}}>Loading NPCs...</div>;
 
   return (
     <div className="entities-container">
@@ -59,27 +61,29 @@ export function NPCsList() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <form onSubmit={handleCreate} className="create-form">
-        <input
-          type="text"
-          placeholder="NPC Name"
-          value={newNPC.name}
-          onChange={e => setNewNPC({ ...newNPC, name: e.target.value })}
-          required
-        />
-        <textarea
-          placeholder="Description"
-          value={newNPC.description}
-          onChange={e => setNewNPC({ ...newNPC, description: e.target.value })}
-        />
-        <button type="submit">Add NPC</button>
-      </form>
+      {isDM && (
+        <form onSubmit={handleCreate} className="create-form">
+          <input
+            type="text"
+            placeholder="NPC Name"
+            value={newNPC.name}
+            onChange={(e) => setNewNPC({ ...newNPC, name: e.target.value })}
+            required
+          />
+          <textarea
+            placeholder="Description"
+            value={newNPC.description}
+            onChange={(e) =>
+              setNewNPC({ ...newNPC, description: e.target.value })
+            }
+          />
+          <button type="submit">Add NPC</button>
+        </form>
+      )}
 
       <div className="entities-list">
-        {npcs.length === 0 ? (
-          <p>No NPCs yet. Create one to get started!</p>
-        ) : (
-          npcs.map(npc => (
+        {(
+          npcs.map((npc) => (
             <div key={npc.id} className="entity-card">
               <div className="entity-header">
                 <h3>{npc.name}</h3>

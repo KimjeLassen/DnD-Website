@@ -52,7 +52,7 @@ export function QuestsList() {
     }
   };
 
-  if (loading) return <div>Loading quests...</div>;
+  if (loading) return <div style={{color:'black'}}>Loading quests...</div>;
 
   return (
     <div className="entities-container">
@@ -60,6 +60,7 @@ export function QuestsList() {
 
       {error && <div className="error-message">{error}</div>}
 
+      {isDM && (
       <form onSubmit={handleCreate} className="create-form">
         <input
           type="text"
@@ -70,6 +71,7 @@ export function QuestsList() {
         />
         <button type="submit">Add Quest</button>
       </form>
+      )}
 
       <div className="entities-list">
         {quests.length === 0 ? (
