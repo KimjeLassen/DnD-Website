@@ -1,5 +1,13 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { usersAPI } from '../services/api';
+import { 
+  setAccessToken, 
+  setRefreshToken, 
+  clearTokens, 
+  hasValidAccessToken,
+  getDecodedToken,
+  getAccessToken
+} from '../services/authUtils';
 
 export interface User {
   id: string;
@@ -26,31 +34,49 @@ export function DMProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    if (hasValidAccessToken()) {
+      const token = getAccessToken();
+      if (token) {
+        const decoded = getDecodedToken(token);
+        if (decoded) {
+          setCurrentUser({
+            id: decoded.userId || '',
+            name: decoded.username,
+            role: decoded.role
+          });
+          setIsLoggedIn(true);
+          if (decoded.role === 'dungeon master') {
+            setIsDM(true);
+          }
+        }
+      }
+    }
+  }, []);
+
   const unlockDM = () => setIsDM(true);
   const lockDM = () => setIsDM(false);
   
   const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
-      // Try to login with existing credentials
-      const noget = await usersAPI.login(username, password); 
-
-//      const loginResponse = await fetch('http://localhost:5000/api/users/login', {
-//        method: 'POST',
-//        headers: { 'Content-Type': 'application/json' },
-//        body: JSON.stringify({ name: username, password })
-//      });
-
-      if (noget) {
-        setCurrentUser(noget);
-        if (noget.role === 'dungeon master')
-        {
-          setIsDM(true);
-        }
-        setIsLoggedIn(true);
-        return;
+      const response = await usersAPI.login(username, password);
+      
+      // Store tokens
+      setAccessToken(response.tokens.accessToken);
+      if (response.tokens.refreshToken) {
+        setRefreshToken(response.tokens.refreshToken);
       }
+
+      // Store user info
+      setCurrentUser(response.user);
+      if (response.user.role === 'dungeon master') {
+        setIsDM(true);
+      }
+      setIsLoggedIn(true);
     } catch (error) {
+      clearTokens();
       throw error;
     } finally {
       setIsLoading(false);
@@ -58,6 +84,7 @@ export function DMProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    clearTokens();
     setIsLoggedIn(false);
     setCurrentUser(null);
     setIsDM(false);

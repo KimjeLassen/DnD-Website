@@ -1,10 +1,11 @@
 import { Router, type Request, type Response } from 'express'
 import { userQueries } from '../queries'
-import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts' 
+import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts'
+import { generateTokens } from '../utils/jwt'
 
 const router = Router()
 
-// POST login - authenticate user
+// POST login - authenticate user and issue JWT
 router.post('/login', async (req: Request, res: Response) => {
   try {
     const { name, password } = req.body
@@ -22,10 +23,20 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid username or password' })
     }
 
+    // Generate JWT tokens
+    const tokens = generateTokens({
+      userId: user.id,
+      username: user.name,
+      role: user.role as 'dungeon master' | 'player'
+    })
+
     res.json({
-      id: user.id,
-      name: user.name,
-      role: user.role
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role
+      },
+      tokens
     })
   } catch (error) {
     res.status(500).json({ error: 'Login failed', details: error })

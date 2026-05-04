@@ -13,19 +13,32 @@ import type {
   CreateNPCRequest,
   CreateItemRequest,
 } from '../types';
+import { getAuthorizationHeader } from './authUtils';
 
 const API_BASE = '/api';
+
+interface LoginResponse {
+  user: User;
+  tokens: {
+    accessToken: string;
+    refreshToken?: string;
+  };
+}
 
 // Helper function for API calls
 async function apiCall<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
+  const authHeader = getAuthorizationHeader();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(authHeader || {}),
+    ...options?.headers,
+  };
+
   const response = await fetch(`${API_BASE}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
     ...options,
   });
 
@@ -57,7 +70,7 @@ export const usersAPI = {
   delete: (id: string) =>
     apiCall<void>(`/users/${id}`, { method: 'DELETE' }),
   login: (name: string, password: string) =>
-    apiCall<User>('/users/login', {
+    apiCall<LoginResponse>('/users/login', {
       method: 'POST',
       body: JSON.stringify({ name, password }),
     }),
