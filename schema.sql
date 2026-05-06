@@ -63,7 +63,7 @@ CREATE TABLE Quest_Rewards (
 );
 
 -- Create Quest Notes table
-CREATE TABLE QuestNotes (
+CREATE TABLE Quest_Notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     quest_id UUID NOT NULL,
     user_id UUID NOT NULL,
@@ -125,8 +125,8 @@ CREATE INDEX idx_users_role_id ON Users(role_id);
 CREATE INDEX idx_quest_steps_quest_id ON Quest_Step(quest_id);
 CREATE INDEX idx_quest_rewards_quest_step_id ON Quest_Rewards(quest_step_id);
 CREATE INDEX idx_quest_rewards_reward_id ON Quest_Rewards(reward_id);
-CREATE INDEX idx_quest_notes_quest_id ON QuestNotes(quest_id);
-CREATE INDEX idx_quest_notes_user_id ON QuestNotes(user_id);
+CREATE INDEX idx_quest_notes_quest_id ON Quest_Notes(quest_id);
+CREATE INDEX idx_quest_notes_user_id ON Quest_Notes(user_id);
 CREATE INDEX idx_characters_user_id ON Characters(user_id);
 CREATE INDEX idx_characters_campaign_id ON Characters(campaign_id);
 CREATE INDEX idx_character_secrets_character_id ON Character_Secrets(character_id);

@@ -333,18 +333,18 @@ export const questRewardQueries = {
 
 export const questNoteQueries = {
   async getAll(): Promise<QuestNote[]> {
-    const result = await query('SELECT * FROM QuestNotes ORDER BY created_at DESC')
+    const result = await query('SELECT * FROM Quest_Notes ORDER BY created_at DESC')
     return result.rows
   },
 
   async getById(id: string): Promise<QuestNote | null> {
-    const result = await query('SELECT * FROM QuestNotes WHERE id = $1', [id])
+    const result = await query('SELECT * FROM Quest_Notes WHERE id = $1', [id])
     return result.rows[0] || null
   },
 
   async getByQuestId(quest_id: string): Promise<QuestNote[]> {
     const result = await query(
-      'SELECT * FROM QuestNotes WHERE quest_id = $1 ORDER BY created_at DESC',
+      'SELECT * FROM Quest_Notes WHERE quest_id = $1 ORDER BY created_at DESC',
       [quest_id]
     )
     return result.rows
@@ -352,7 +352,7 @@ export const questNoteQueries = {
 
   async create(quest_id: string, user_id: string, text: string): Promise<QuestNote> {
     const result = await query(
-      `INSERT INTO QuestNotes (quest_id, user_id, text) 
+      `INSERT INTO Quest_Notes (quest_id, user_id, text) 
        VALUES ($1, $2, $3) RETURNING *`,
       [quest_id, user_id, text]
     )
@@ -361,14 +361,14 @@ export const questNoteQueries = {
 
   async update(id: string, text: string): Promise<QuestNote | null> {
     const result = await query(
-      'UPDATE QuestNotes SET text = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      'UPDATE Quest_Notes SET text = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
       [text, id]
     )
     return result.rows[0] || null
   },
 
   async delete(id: string): Promise<boolean> {
-    const result = await query('DELETE FROM QuestNotes WHERE id = $1', [id])
+    const result = await query('DELETE FROM Quest_Notes WHERE id = $1', [id])
     return result.rowCount > 0
   },
 }

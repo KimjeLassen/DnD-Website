@@ -150,7 +150,7 @@ Users (1) ──→ (many) Characters
         ↓
      (1) ──→ (many) Character_Secrets
         ↓
-     (1) ──→ (many) QuestNotes
+     (1) ──→ (many) Quest_Notes
         ↓
      (1) ──→ (many) NPC_Comments
 

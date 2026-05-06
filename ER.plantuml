@@ -14,7 +14,7 @@ entity Quest_Rewards {
     quest_step_id UUID,
     reward_id UUID,
 }
-entity QuestNotes {
+entity Quest_Notes {
     id UUID,
     quest_id UUID,
     user_id UUID,
@@ -68,11 +68,11 @@ entity Roles {
 Quest ||--o{ Quest_Step : "contains"
 Quest_Step ||--o{ Quest_Rewards : "has"
 Quest_Rewards ||--o{ Items : "has"
-Quest ||--o{ QuestNotes : "has"
+Quest ||--o{ Quest_Notes : "has"
 Characters ||--o{ Character_Secrets : "has"
 NPCs ||--o{ NPC_Comments : "has"
 Roles ||--o{ Users : "has"
-Users ||--o{ QuestNotes : "writes"
+Users ||--o{ Quest_Notes : "writes"
 Users ||--o{ Characters : "creates"
 Users ||--o{ Character_Secrets : "writes"
 Users ||--o{ NPC_Comments : "writes"
