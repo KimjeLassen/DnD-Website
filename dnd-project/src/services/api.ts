@@ -3,6 +3,7 @@ import type {
   Character,
   Quest,
   QuestStep,
+  QuestNote,
   NPC,
   Item,
   Role,
@@ -188,4 +189,26 @@ export const itemsAPI = {
     }),
   delete: (id: string) =>
     apiCall<void>(`/items/${id}`, { method: 'DELETE' }),
+};
+
+// Quest Comments API
+export const questCommentsAPI = {
+  getByQuestId: (questId: string) =>
+    apiCall<QuestNote[]>(`/quest-comments/${questId}`),
+  getById: (questId: string, commentId: string) =>
+    apiCall<QuestNote>(`/quest-comments/${questId}/comment/${commentId}`),
+  create: (questId: string, text: string) =>
+    apiCall<QuestNote>(`/quest-comments/${questId}`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
+  update: (questId: string, commentId: string, text: string) =>
+    apiCall<QuestNote>(`/quest-comments/${questId}/comment/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ text }),
+    }),
+  delete: (questId: string, commentId: string) =>
+    apiCall<void>(`/quest-comments/${questId}/comment/${commentId}`, {
+      method: 'DELETE',
+    }),
 };

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Quest, QuestStep } from '../types';
 import { questsAPI, questStepsAPI } from '../services/api';
 import { QuestStepModal } from '../components/QuestStepModal';
+import { QuestCommentsSection } from '../components/QuestCommentsSection';
 import '../styles/questDetail.css';
 import { useDM } from '../context/DMContext';
 
@@ -141,6 +142,8 @@ export function QuestDetailPage() {
         onSubmit={handleCreateStep}
         isLoading={isCreatingStep}
       />)}
+
+      {id && <QuestCommentsSection questId={id} />}
     </div>
   );
 }

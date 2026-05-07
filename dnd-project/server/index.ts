@@ -9,6 +9,7 @@ import charactersRouter from './routes/characters'
 import npcsRouter from './routes/npcs'
 import itemsRouter from './routes/items'
 import questRewardsRouter from './routes/questRewards'
+import questCommentsRouter from './routes/questComments'
 
 const app = express()
 const PORT = Number(process.env.PORT) || 3001
@@ -30,6 +31,7 @@ app.use('/api/characters', charactersRouter)
 app.use('/api/npcs', npcsRouter)
 app.use('/api/items', itemsRouter)
 app.use('/api/quest-rewards', questRewardsRouter)
+app.use('/api/quest-comments', questCommentsRouter)
 
 app.listen(PORT, () => {
   console.log(`API listening on http://localhost:${PORT}`)
