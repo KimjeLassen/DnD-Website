@@ -16,6 +16,7 @@ export interface User {
 export interface Quest {
   id: string
   name: string
+  can_see: boolean
   created_at: string
   updated_at: string
 }

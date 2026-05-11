@@ -34,7 +34,7 @@ router.post('/:questId', authMiddleware, async (req: Request, res: Response) => 
   try {
     const { questId } = req.params
     const { text } = req.body
-    const userId = (req as any).user?.id
+    const userId = req.user?.userId
 
     if (!text || !userId) {
       return res.status(400).json({ error: 'Text and user ID are required' })

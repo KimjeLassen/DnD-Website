@@ -186,14 +186,14 @@ export const questQueries = {
   },
 
   async getById(id: string): Promise<Quest | null> {
-    const result = await query('SELECT id, name FROM Quest WHERE id = $1', [id])
+    const result = await query('SELECT id, can_see, name FROM Quest WHERE id = $1', [id])
     return result.rows[0] || null
   },
 
   async create(name: string): Promise<Quest> {
     const result = await query(
-      'INSERT INTO Quest (name) VALUES ($1) RETURNING *',
-      [name]
+      'INSERT INTO Quest (name, can_see) VALUES ($1, $2) RETURNING *',
+      [name, false]
     )
     return result.rows[0]
   },
@@ -210,6 +210,13 @@ export const questQueries = {
     const result = await query('DELETE FROM Quest WHERE id = $1', [id])
     return result.rowCount > 0
   },
+  async setVisibility(id: string, can_see: boolean): Promise<Quest | null> {
+    const result = await query(
+      'UPDATE Quest SET can_see = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [can_see, id]
+    )
+    return result.rows[0] || null
+  }
 }
 
 // ============================================================================
@@ -279,6 +286,14 @@ export const questStepQueries = {
     const result = await query('DELETE FROM Quest_Step WHERE id = $1', [id])
     return result.rowCount > 0
   },
+
+  async setVisibility(id: string, can_see: boolean): Promise<QuestStep | null> {
+    const result = await query(
+      'UPDATE Quest_Step SET can_see = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [can_see, id]
+    )
+    return result.rows[0] || null
+  }
 }
 
 // ============================================================================
@@ -333,7 +348,7 @@ export const questRewardQueries = {
 
 export const questNoteQueries = {
   async getAll(): Promise<QuestNote[]> {
-    const result = await query('SELECT * FROM Quest_Notes ORDER BY created_at DESC')
+    const result = await query('SELECT Quest_Notes.*, Users.name AS user_name FROM Quest_Notes JOIN Users ON Quest_Notes.user_id = Users.id ORDER BY created_at DESC')
     return result.rows
   },
 
@@ -344,7 +359,7 @@ export const questNoteQueries = {
 
   async getByQuestId(quest_id: string): Promise<QuestNote[]> {
     const result = await query(
-      'SELECT * FROM Quest_Notes WHERE quest_id = $1 ORDER BY created_at DESC',
+      'SELECT Quest_Notes.*, Users.name AS user_name FROM Quest_Notes JOIN Users ON Quest_Notes.user_id = Users.id WHERE quest_id = $1 ORDER BY created_at DESC',
       [quest_id]
     )
     return result.rows

@@ -135,6 +135,11 @@ export const questsAPI = {
     }),
   delete: (id: string) =>
     apiCall<void>(`/quests/${id}`, { method: 'DELETE' }),
+  changeVisibility: (id: string, canSee: boolean) =>
+    apiCall<Quest>(`/quests/${id}/visibility`, {
+      method: 'PUT',
+      body: JSON.stringify({ can_see: canSee }),
+    }),
 };
 
 // Quest Steps API

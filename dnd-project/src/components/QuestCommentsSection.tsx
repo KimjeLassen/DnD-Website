@@ -155,6 +155,7 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
                     {note.updated_at !== note.created_at && (
                       <span className="note-edited">(edited)</span>
                     )}
+                    <span className= "note-date">{note.user_name}</span>
                   </div>
                   <p className="note-text">{note.text}</p>
                   {isDM && (

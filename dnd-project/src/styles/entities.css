@@ -151,10 +151,6 @@
   transition: left 0.5s;
 }
 
-.quest-card:hover::before {
-  left: 100%;
-}
-
 .quest-card:hover {
   border-color: #818C78;
   box-shadow: 0 4px 15px rgba(129, 140, 120, 0.2);

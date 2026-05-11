@@ -73,6 +73,23 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 })
 
+router.put('/:id/visibility', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { can_see } = req.body
+    if (typeof can_see !== 'boolean') {
+      return res.status(400).json({ error: 'can_see must be a boolean' })
+    }
+    const quest = await questQueries.setVisibility(id, can_see)
+    if (!quest) {
+      return res.status(404).json({ error: 'Quest not found' })
+    }
+    res.json(quest)
+    } catch (error) {
+    res.status(500).json({ error: 'Failed to update quest visibility', details: error })
+  }
+})
+
 // GET quest steps for a quest
 router.get('/:id/steps', async (req: Request, res: Response) => {
   try {

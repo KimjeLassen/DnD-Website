@@ -42,6 +42,7 @@ export interface CharacterSecret {
 export interface Quest {
   id: string;
   name: string;
+  can_see: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -97,6 +98,7 @@ export interface QuestNote {
   id: string;
   quest_id: string;
   user_id: string;
+  user_name: string;
   text: string;
   created_at: string;
   updated_at: string;
