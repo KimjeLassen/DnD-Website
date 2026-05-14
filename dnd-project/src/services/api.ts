@@ -122,6 +122,7 @@ export const campaignsAPI = {
 // Quests API
 export const questsAPI = {
   getAll: () => apiCall<Quest[]>('/quests'),
+  getVisible: () => apiCall<Quest[]>('/quests/visible'),
   getById: (id: string) => apiCall<Quest>(`/quests/${id}`),
   create: (data: CreateQuestRequest) =>
     apiCall<Quest>('/quests', {

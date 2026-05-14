@@ -184,7 +184,10 @@ export const questQueries = {
     const result = await query('SELECT * FROM Quest ORDER BY created_at DESC')
     return result.rows
   },
-
+  async getVisible(): Promise<Quest[]> {
+    const result = await query('SELECT id, can_see, name FROM Quest WHERE can_see = true ORDER BY created_at DESC')
+    return result.rows
+  },
   async getById(id: string): Promise<Quest | null> {
     const result = await query('SELECT id, can_see, name FROM Quest WHERE id = $1', [id])
     return result.rows[0] || null
@@ -236,7 +239,7 @@ export const questStepQueries = {
 
   async getByQuestId(quest_id: string): Promise<QuestStep[]> {
     const result = await query(
-      'SELECT id, text, display_order FROM Quest_Step WHERE quest_id = $1 AND can_see = true ORDER BY display_order ASC',
+      'SELECT * FROM Quest_Step WHERE quest_id = $1 ORDER BY display_order ASC',
       [quest_id]
     )
     return result.rows
@@ -276,7 +279,7 @@ export const questStepQueries = {
 
     params.push(id)
     const result = await query(
-      `UPDATE Quest_Step SET ${updates.join(', ')} WHERE id = $${param_count + 1} RETURNING *`,
+      `UPDATE Quest_Step SET ${updates.join(', ')} WHERE id = $${param_count} RETURNING *`,
       params
     )
     return result.rows[0] || null

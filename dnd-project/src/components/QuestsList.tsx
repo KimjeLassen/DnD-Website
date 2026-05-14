@@ -20,8 +20,13 @@ export function QuestsList() {
   const loadQuests = async () => {
     try {
       setLoading(true);
-      const data = await questsAPI.getAll();
-      setQuests(data);
+      if (isDM) {
+        const data = await questsAPI.getAll();
+        setQuests(data);
+      } else {
+        const data = await questsAPI.getVisible();
+        setQuests(data);
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load quests");
@@ -52,7 +57,7 @@ export function QuestsList() {
     }
   };
 
-  if (loading) return <div style={{color:'black'}}>Loading quests...</div>;
+  if (loading) return <div style={{ color: "black" }}>Loading quests...</div>;
 
   return (
     <div className="entities-container">
@@ -61,22 +66,20 @@ export function QuestsList() {
       {error && <div className="error-message">{error}</div>}
 
       {isDM && (
-      <form onSubmit={handleCreate} className="create-form">
-        <input
-          type="text"
-          placeholder="Quest Name"
-          value={newQuest}
-          onChange={(e) => setNewQuest(e.target.value)}
-          required
-        />
-        <button type="submit">Add Quest</button>
-      </form>
+        <form onSubmit={handleCreate} className="create-form">
+          <input
+            type="text"
+            placeholder="Quest Name"
+            value={newQuest}
+            onChange={(e) => setNewQuest(e.target.value)}
+            required
+          />
+          <button type="submit">Add Quest</button>
+        </form>
       )}
 
       <div className="entities-list">
-        {quests.length === 0 ? (
-          <p>No quests yet. Create one to get started!</p>
-        ) : (
+        {(
           quests.map((quest) => (
             <div
               key={quest.id}
@@ -85,20 +88,18 @@ export function QuestsList() {
             >
               <div className="entity-header">
                 <h3>{quest.name}</h3>
-              {isDM &&(
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(quest.id);
-                  }}
-                  className="delete-btn"
-                >
-                  Delete
-                </button>)}
+                {isDM && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(quest.id);
+                    }}
+                    className="delete-btn"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
-              <p className="quest-meta">
-                Created: {new Date(quest.created_at).toLocaleDateString()}
-              </p>
               <p className="click-hint">Click to view details</p>
             </div>
           ))

@@ -30,6 +30,9 @@ export function QuestDetailPage() {
         setQuest(questData);
         setCanSeeQuest(questData.can_see);
 
+        if (!questData.can_see && !isDM) {
+          return;
+        }
         const stepsData = await questStepsAPI.getByQuestId(id);
         setSteps(
           stepsData.sort(
@@ -47,7 +50,7 @@ export function QuestDetailPage() {
     };
 
     loadQuestDetails();
-  }, [id]);
+  }, [id, isDM]);
 
   const handleCreateStep = async (text: string, canSee: boolean) => {
     if (!id) return;
@@ -80,17 +83,37 @@ export function QuestDetailPage() {
 
   const handleChangeVisibility = async () => {
     if (!id) return;
-    setCanSeeQuest(!canSeeQuest)
-    console.log(canSeeQuest)
+    const newVisibility = !canSeeQuest;
+    setCanSeeQuest(newVisibility);
     try {
-      await questsAPI.changeVisibility(id, canSeeQuest);
+      await questsAPI.changeVisibility(id, newVisibility);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to change visibility",
       );
     }
-  };
+  }
 
+  const handleStepVisibility = async (stepId: string) => {
+    if (!id || !stepId) return;
+
+    const step = steps.find((s) => s.id === stepId);
+    if (!step) return;
+
+    try {
+      const updatedStep = await questStepsAPI.update(id, stepId, {
+        can_see: !step.can_see,
+      });
+      setSteps(
+        steps.map((s) => (s.id === stepId ? updatedStep : s))
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to change step visibility",
+      );
+    }
+  }
+  
   if (loading)
     return (
       <div className="quest-detail-container">
@@ -126,12 +149,15 @@ export function QuestDetailPage() {
         ← Back to Quests
       </button>
 
+      {(canSeeQuest || isDM) && (
+      <>
       <div className="quest-detail-header">
         <h1>
           {quest.name}
-          <button onClick={() => handleChangeVisibility()}>
-            {canSeeQuest?  <EyeClosed /> : <Eye />}
-          </button>
+          {isDM && (
+          <button onClick={() => handleChangeVisibility()} style={{ marginLeft: '12px' }}>
+            {canSeeQuest ? <Eye/> : <EyeClosed /> }
+          </button>)}
         </h1>
       </div>
 
@@ -156,10 +182,8 @@ export function QuestDetailPage() {
                 <div className="step-number">{index + 1}</div>
                 <div className="step-content">
                   <p>{step.text}</p>
-                  {step.can_see && (
-                    <span className="visible-badge">Visible to Players</span>
-                  )}
                 </div>
+                <div>
                 {isDM && (
                   <button
                     className="btn-delete-step"
@@ -169,11 +193,25 @@ export function QuestDetailPage() {
                     ×
                   </button>
                 )}
+</div>
+<div>
+                {isDM && (
+                  <button
+                    className="btn-visible-step"
+                    onClick={() => handleStepVisibility(step.id)}
+                    title="Toggle step visibility"
+                  >
+                  {step.can_see?   <Eye /> : <EyeClosed />}
+                  </button>
+                )}
+</div>
               </div>
             ))}
           </div>
         )}
       </div>
+      </>
+      )}
       {isDM && (
         <QuestStepModal
           isOpen={isModalOpen}
@@ -183,7 +221,7 @@ export function QuestDetailPage() {
         />
       )}
 
-      {id && <QuestCommentsSection questId={id} />}
+      {id && ( canSeeQuest || isDM ) && <QuestCommentsSection questId={id} />}
     </div>
   );
 }

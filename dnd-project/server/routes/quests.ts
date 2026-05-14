@@ -12,6 +12,14 @@ router.get('/', async (_req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch quests', details: error })
   }
 })
+router.get('/visible', async (_req: Request, res: Response) => {
+  try {
+    const quests = await questQueries.getVisible()
+    res.json(quests)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch visible quests', details: error })
+  }
+})
 
 // GET quest by ID
 router.get('/:id', async (req: Request, res: Response) => {
@@ -74,6 +82,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 })
 
 router.put('/:id/visibility', async (req: Request, res: Response) => {
+  console.log('Received request to update quest visibility:', req.params, req.body)
   try {
     const { id } = req.params
     const { can_see } = req.body
@@ -130,6 +139,24 @@ router.delete('/:id/steps/:stepId', async (req: Request, res: Response) => {
     res.json({ message: 'Quest step deleted successfully' })
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete quest step', details: error })
+  }
+})
+
+// PUT update quest step
+router.put('/:id/steps/:stepId', async (req: Request, res: Response) => {
+  try {
+    const { stepId } = req.params
+    const { text, can_see, display_order } = req.body
+    if (!stepId) {
+      return res.status(400).json({ error: 'Quest step ID is required' })
+    }
+    const step = await questStepQueries.update(stepId, text, can_see, display_order)
+    if (!step) {
+      return res.status(404).json({ error: 'Quest step not found' })
+    }
+    res.json(step)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update quest step', details: error })
   }
 })
 
