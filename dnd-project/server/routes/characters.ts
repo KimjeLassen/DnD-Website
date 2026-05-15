@@ -1,12 +1,16 @@
 import { Router, type Request, type Response } from 'express'
 import { characterQueries, characterSecretQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
 
-// GET all characters
-router.get('/', async (_req: Request, res: Response) => {
+// GET all characters (optional ?user_id= filter)
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const characters = await characterQueries.getAll()
+    const userId = req.query.user_id as string | undefined
+    const characters = userId
+      ? await characterQueries.getByUserId(userId)
+      : await characterQueries.getAll()
     res.json(characters)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch characters', details: error })
@@ -27,8 +31,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// POST create new character
-router.post('/', async (req: Request, res: Response) => {
+// POST create new character (DM only)
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name, user_id, notes, campaign_id } = req.body
     if (!name || !user_id) {
@@ -41,8 +45,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update character
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT update character (DM only)
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name, notes, campaign_id } = req.body
@@ -56,8 +60,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE character
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE character (DM only)
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await characterQueries.delete(id)
@@ -70,8 +74,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// GET character secrets
-router.get('/:id/secrets', async (req: Request, res: Response) => {
+// GET character secrets (DM only)
+router.get('/:id/secrets', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const secrets = await characterSecretQueries.getByCharacterId(id)
@@ -81,13 +85,14 @@ router.get('/:id/secrets', async (req: Request, res: Response) => {
   }
 })
 
-// POST create character secret
-router.post('/:id/secrets', async (req: Request, res: Response) => {
+// POST create character secret (DM only)
+router.post('/:id/secrets', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { secret, written_by } = req.body
+    const { secret } = req.body
+    const written_by = req.user?.userId
     if (!secret || !written_by) {
-      return res.status(400).json({ error: 'Secret and written_by are required' })
+      return res.status(400).json({ error: 'Secret is required' })
     }
     const characterSecret = await characterSecretQueries.create(id, secret, written_by)
     res.status(201).json(characterSecret)
@@ -110,8 +115,8 @@ router.get('/:id/secrets/:secretId', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update character secret
-router.put('/:id/secrets/:secretId', async (req: Request, res: Response) => {
+// PUT update character secret (DM only)
+router.put('/:id/secrets/:secretId', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { secretId } = req.params
     const { secret } = req.body
@@ -128,8 +133,8 @@ router.put('/:id/secrets/:secretId', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE character secret
-router.delete('/:id/secrets/:secretId', async (req: Request, res: Response) => {
+// DELETE character secret (DM only)
+router.delete('/:id/secrets/:secretId', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { secretId } = req.params
     const deleted = await characterSecretQueries.delete(secretId)

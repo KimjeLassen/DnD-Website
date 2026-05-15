@@ -9,7 +9,10 @@ export interface Role {
 export interface User {
   id: string;
   name: string;
+  role_id: string;
   role: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Campaign {
@@ -107,6 +110,7 @@ export interface QuestNote {
 // Request/Response types
 export interface CreateUserRequest {
   name: string;
+  password: string;
   role_id: string;
 }
 

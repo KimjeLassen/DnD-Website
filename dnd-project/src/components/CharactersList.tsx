@@ -144,12 +144,14 @@ export function CharactersList() {
             <div key={character.id} className="entity-card">
               <div className="entity-header">
                 <h3>{character.name}</h3>
-                <button
-                  onClick={() => handleDelete(character.id)}
-                  className="delete-btn"
-                >
-                  Delete
-                </button>
+                {isDM && (
+                  <button
+                    onClick={() => handleDelete(character.id)}
+                    className="delete-btn"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
               <p>
                 <strong>Player:</strong> {getUserName(character.user_id)}

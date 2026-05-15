@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { questRewardQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
 
@@ -28,7 +29,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 })
 
 // DELETE quest reward
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await questRewardQueries.delete(id)
@@ -42,7 +43,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 })
 
 // PUT update quest reward
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { quantity } = req.body

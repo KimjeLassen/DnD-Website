@@ -1,10 +1,12 @@
 import { Router, type Request, type Response } from 'express'
 import { questQueries, questStepQueries, questNoteQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
+const DM_ROLE = 'dungeon master'
 
-// GET all quests
-router.get('/', async (_req: Request, res: Response) => {
+// GET all quests (DM only)
+router.get('/', dmMiddleware, async (_req: Request, res: Response) => {
   try {
     const quests = await questQueries.getAll()
     res.json(quests)
@@ -21,12 +23,15 @@ router.get('/visible', async (_req: Request, res: Response) => {
   }
 })
 
-// GET quest by ID
+// GET quest by ID (players cannot access hidden quests)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const quest = await questQueries.getById(id)
     if (!quest) {
+      return res.status(404).json({ error: 'Quest not found' })
+    }
+    if (!quest.can_see && req.user?.role !== DM_ROLE) {
       return res.status(404).json({ error: 'Quest not found' })
     }
     res.json(quest)
@@ -35,8 +40,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// POST create new quest
-router.post('/', async (req: Request, res: Response) => {
+// POST create new quest (DM only)
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name } = req.body
     if (!name) {
@@ -49,8 +54,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update quest
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT update quest (DM only)
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name } = req.body
@@ -67,8 +72,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE quest
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE quest (DM only)
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await questQueries.delete(id)
@@ -81,8 +86,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 })
 
-router.put('/:id/visibility', async (req: Request, res: Response) => {
-  console.log('Received request to update quest visibility:', req.params, req.body)
+router.put('/:id/visibility', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { can_see } = req.body
@@ -99,19 +103,20 @@ router.put('/:id/visibility', async (req: Request, res: Response) => {
   }
 })
 
-// GET quest steps for a quest
+// GET quest steps for a quest (players only see visible steps)
 router.get('/:id/steps', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const steps = await questStepQueries.getByQuestId(id)
+    const isDM = req.user?.role === DM_ROLE
+    const steps = await questStepQueries.getByQuestId(id, !isDM)
     res.json(steps)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch quest steps', details: error })
   }
 })
 
-// POST create quest step
-router.post('/:id/steps', async (req: Request, res: Response) => {
+// POST create quest step (DM only)
+router.post('/:id/steps', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { text, can_see, display_order } = req.body
@@ -125,8 +130,8 @@ router.post('/:id/steps', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE quest step
-router.delete('/:id/steps/:stepId', async (req: Request, res: Response) => {
+// DELETE quest step (DM only)
+router.delete('/:id/steps/:stepId', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { stepId } = req.params
     if (!stepId) {
@@ -142,8 +147,8 @@ router.delete('/:id/steps/:stepId', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update quest step
-router.put('/:id/steps/:stepId', async (req: Request, res: Response) => {
+// PUT update quest step (DM only)
+router.put('/:id/steps/:stepId', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { stepId } = req.params
     const { text, can_see, display_order } = req.body

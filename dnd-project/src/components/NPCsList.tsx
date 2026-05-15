@@ -87,12 +87,14 @@ export function NPCsList() {
             <div key={npc.id} className="entity-card">
               <div className="entity-header">
                 <h3>{npc.name}</h3>
-                <button
-                  onClick={() => handleDelete(npc.id)}
-                  className="delete-btn"
-                >
-                  Delete
-                </button>
+                {isDM && (
+                  <button
+                    onClick={() => handleDelete(npc.id)}
+                    className="delete-btn"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
               {npc.description && <p>{npc.description}</p>}
               {npc.image && <img src={npc.image} alt={npc.name} />}

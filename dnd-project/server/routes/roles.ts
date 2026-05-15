@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { roleQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
 
@@ -27,8 +28,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// POST create new role
-router.post('/', async (req: Request, res: Response) => {
+// POST create new role (DM only)
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name } = req.body
     if (!name) {
@@ -41,8 +42,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update role
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT update role (DM only)
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name } = req.body
@@ -59,8 +60,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE role
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE role (DM only)
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await roleQueries.delete(id)

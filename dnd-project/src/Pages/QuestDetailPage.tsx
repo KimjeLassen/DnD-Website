@@ -17,7 +17,7 @@ export function QuestDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreatingStep, setIsCreatingStep] = useState(false);
-  const [canSeeQuest, setCanSeeQuest] = useState(false);;
+  const [canSeeQuest, setCanSeeQuest] = useState(false);
   const { isDM } = useDM();
 
   useEffect(() => {
@@ -55,16 +55,14 @@ export function QuestDetailPage() {
   const handleCreateStep = async (text: string, canSee: boolean) => {
     if (!id) return;
 
+    setIsCreatingStep(true);
     try {
-      setIsCreatingStep(true);
       const newStep = await questStepsAPI.create(id, text, canSee);
       setSteps(
         [...steps, newStep].sort(
           (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
         ),
       );
-    } catch (err) {
-      throw err;
     } finally {
       setIsCreatingStep(false);
     }
@@ -177,7 +175,7 @@ export function QuestDetailPage() {
           <p className="no-steps">No steps added to this quest yet.</p>
         ) : (
           <div className="steps-list">
-            {steps.map((step, index) => (
+            {steps.filter((step) => isDM || step.can_see).map((step, index) => (
               <div key={step.id} className="step-card">
                 <div className="step-number">{index + 1}</div>
                 <div className="step-content">

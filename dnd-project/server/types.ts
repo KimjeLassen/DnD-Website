@@ -9,8 +9,14 @@ export interface Role {
 export interface User {
   id: string
   name: string
-  password: string
+  role_id: string
   role: string
+  created_at: string
+  updated_at: string
+}
+
+export interface UserWithPassword extends User {
+  password: string
 }
 
 export interface Quest {

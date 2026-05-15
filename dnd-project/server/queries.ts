@@ -1,6 +1,8 @@
 import { query } from './db'
 import type { Role, User, Quest, QuestStep, Item, Character, CharacterSecret, NPC, NPCComment, QuestReward, QuestNote } from './types'
 
+const USER_PUBLIC_COLUMNS = 'Users.id, Users.name, Users.role_id, Users.created_at, Users.updated_at, Roles.name AS role'
+
 // ============================================================================
 // ROLES QUERIES
 // ============================================================================
@@ -44,53 +46,69 @@ export const roleQueries = {
 
 export const userQueries = {
   async getAll(): Promise<User[]> {
-    const result = await query('SELECT * FROM Users ORDER BY created_at DESC')
+    const result = await query(
+      `SELECT ${USER_PUBLIC_COLUMNS} FROM Users JOIN Roles ON Users.role_id = Roles.id ORDER BY Users.created_at DESC`
+    )
     return result.rows
   },
 
   async getById(id: string): Promise<User | null> {
-    const result = await query('SELECT * FROM Users WHERE id = $1', [id])
+    const result = await query(
+      `SELECT ${USER_PUBLIC_COLUMNS} FROM Users JOIN Roles ON Users.role_id = Roles.id WHERE Users.id = $1`,
+      [id]
+    )
     return result.rows[0] || null
   },
 
   async create(name: string, password: string, role_id: string): Promise<User> {
     const result = await query(
-      'INSERT INTO Users (name, password, role_id) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO Users (name, password, role_id) VALUES ($1, $2, $3) RETURNING id',
       [name, password, role_id]
     )
-    return result.rows[0]
+    return (await this.getById(result.rows[0].id))!
   },
 
-  async update(id: string, name: string, password?: string, role_id?: string): Promise<User | null> {
-    let query_text = 'UPDATE Users SET name = $1'
-    const params: unknown[] = [name, id]
-    let param_count = 2
+  async update(id: string, name?: string, password?: string, role_id?: string): Promise<User | null> {
+    const updates: string[] = []
+    const params: unknown[] = []
+    let param_count = 1
 
-    if (password) {
-      query_text += `, password = $${param_count + 1}`
-      params.splice(1, 0, password)
+    if (name !== undefined) {
+      updates.push(`name = $${param_count}`)
+      params.push(name)
       param_count += 1
     }
-    if (role_id) {
-      query_text += `, role_id = $${param_count + 1}`
-      params.splice(1, 0, role_id)
+    if (password !== undefined) {
+      updates.push(`password = $${param_count}`)
+      params.push(password)
+      param_count += 1
+    }
+    if (role_id !== undefined) {
+      updates.push(`role_id = $${param_count}`)
+      params.push(role_id)
       param_count += 1
     }
 
-    query_text += `, updated_at = NOW() WHERE id = $${param_count + 1} RETURNING *`
+    if (updates.length === 0) return this.getById(id)
+
+    updates.push('updated_at = NOW()')
     params.push(id)
 
-    const result = await query(query_text, params)
-    return result.rows[0] || null
+    const result = await query(
+      `UPDATE Users SET ${updates.join(', ')} WHERE id = $${param_count} RETURNING id`,
+      params
+    )
+    if (!result.rows[0]) return null
+    return this.getById(id)
   },
 
   async delete(id: string): Promise<boolean> {
     const result = await query('DELETE FROM Users WHERE id = $1', [id])
     return result.rowCount > 0
   },
-  async login(name: string): Promise<User | null> {
+  async login(name: string): Promise<(User & { password: string }) | null> {
     const result = await query(
-      'SELECT Users.id, Users.name, Users.password, Roles.name as role FROM Users JOIN Roles ON Users.role_id = Roles.id WHERE Users.name = $1 LIMIT 1',
+      'SELECT Users.id, Users.name, Users.password, Users.role_id, Roles.name AS role FROM Users JOIN Roles ON Users.role_id = Roles.id WHERE Users.name = $1 LIMIT 1',
       [name]
     )
     return result.rows[0] || null
@@ -237,11 +255,11 @@ export const questStepQueries = {
     return result.rows[0] || null
   },
 
-  async getByQuestId(quest_id: string): Promise<QuestStep[]> {
-    const result = await query(
-      'SELECT * FROM Quest_Step WHERE quest_id = $1 ORDER BY display_order ASC',
-      [quest_id]
-    )
+  async getByQuestId(quest_id: string, visibleOnly = false): Promise<QuestStep[]> {
+    const sql = visibleOnly
+      ? 'SELECT * FROM Quest_Step WHERE quest_id = $1 AND can_see = true ORDER BY display_order ASC'
+      : 'SELECT * FROM Quest_Step WHERE quest_id = $1 ORDER BY display_order ASC'
+    const result = await query(sql, [quest_id])
     return result.rows
   },
 

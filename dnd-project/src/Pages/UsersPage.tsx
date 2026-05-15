@@ -78,7 +78,7 @@ export function UsersPage() {
         name: formData.name,
         password: formData.password,
         role_id: formData.role_id,
-      } as any);
+      });
 
       setSuccess('User created successfully!');
       setFormData({

@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { npcQueries, npcCommentQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
 
@@ -27,8 +28,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// POST create new NPC
-router.post('/', async (req: Request, res: Response) => {
+// POST create new NPC (DM only)
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name, description, image } = req.body
     if (!name) {
@@ -41,8 +42,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update NPC
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT update NPC (DM only)
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name, description, image } = req.body
@@ -56,8 +57,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE NPC
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE NPC (DM only)
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await npcQueries.delete(id)
@@ -85,9 +86,10 @@ router.get('/:id/comments', async (req: Request, res: Response) => {
 router.post('/:id/comments', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { user_id, text } = req.body
+    const { text } = req.body
+    const user_id = req.user?.userId
     if (!user_id || !text) {
-      return res.status(400).json({ error: 'User ID and text are required' })
+      return res.status(400).json({ error: 'Text is required' })
     }
     const comment = await npcCommentQueries.create(id, user_id, text)
     res.status(201).json(comment)

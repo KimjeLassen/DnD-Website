@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { itemQueries } from '../queries'
+import { dmMiddleware } from '../middleware/auth'
 
 const router = Router()
 
@@ -28,7 +29,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 })
 
 // POST create new item
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name, description, image, price, attunement, type } = req.body
     if (!name) {
@@ -42,7 +43,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // PUT update item
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name, description, image, price, attunement, type } = req.body
@@ -57,7 +58,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 })
 
 // DELETE item
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await itemQueries.delete(id)

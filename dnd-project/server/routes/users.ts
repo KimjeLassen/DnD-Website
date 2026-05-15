@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express'
+import bcrypt from 'bcrypt'
 import { userQueries } from '../queries'
-import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts'
+import { dmMiddleware } from '../middleware/auth'
 import { generateTokens } from '../utils/jwt'
 
 const router = Router()
@@ -19,7 +20,7 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid username or password' })
     }
 
-    if (!compareSync(password, user.password)) {
+    if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Invalid username or password' })
     }
 
@@ -43,8 +44,8 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 })
 
-// GET all users
-router.get('/', async (_req: Request, res: Response) => {
+// GET all users (DM only)
+router.get('/', dmMiddleware, async (_req: Request, res: Response) => {
   try {
     const users = await userQueries.getAll()
     res.json(users)
@@ -53,8 +54,8 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 })
 
-// GET user by ID
-router.get('/:id', async (req: Request, res: Response) => {
+// GET user by ID (DM only)
+router.get('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const user = await userQueries.getById(id)
@@ -67,15 +68,14 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// POST create new user
-router.post('/', async (req: Request, res: Response) => {
+// POST create new user (DM only)
+router.post('/', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { name, password, role_id } = req.body
     if (!name || !password || !role_id) {
       return res.status(400).json({ error: 'Name, password, and role_id are required' })
     }
-    const salt = genSaltSync(10)
-    const hashedPassword = hashSync(password, salt)
+    const hashedPassword = bcrypt.hashSync(password, 10)
     const user = await userQueries.create(name, hashedPassword, role_id)
     res.status(201).json(user)
   } catch (error) {
@@ -83,12 +83,13 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// PUT update user
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT update user (DM only)
+router.put('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name, password, role_id } = req.body
-    const user = await userQueries.update(id, name, password, role_id)
+    const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined
+    const user = await userQueries.update(id, name, hashedPassword, role_id)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
@@ -98,8 +99,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// DELETE user
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE user (DM only)
+router.delete('/:id', dmMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const deleted = await userQueries.delete(id)

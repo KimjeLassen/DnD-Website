@@ -1,7 +1,5 @@
 import { Router, type Request, type Response } from 'express'
 import { questNoteQueries } from '../queries'
-import { authMiddleware } from '../middleware/auth'
-
 const router = Router()
 
 // GET all comments for a quest
@@ -30,7 +28,7 @@ router.get('/:questId/comment/:commentId', async (req: Request, res: Response) =
 })
 
 // POST create a new comment
-router.post('/:questId', authMiddleware, async (req: Request, res: Response) => {
+router.post('/:questId', async (req: Request, res: Response) => {
   try {
     const { questId } = req.params
     const { text } = req.body
@@ -48,7 +46,7 @@ router.post('/:questId', authMiddleware, async (req: Request, res: Response) => 
 })
 
 // PUT update a comment
-router.put('/:questId/comment/:commentId', authMiddleware, async (req: Request, res: Response) => {
+router.put('/:questId/comment/:commentId', async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params
     const { text } = req.body
@@ -68,7 +66,7 @@ router.put('/:questId/comment/:commentId', authMiddleware, async (req: Request, 
 })
 
 // DELETE a comment
-router.delete('/:questId/comment/:commentId', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/:questId/comment/:commentId', async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params
     const deleted = await questNoteQueries.delete(commentId)

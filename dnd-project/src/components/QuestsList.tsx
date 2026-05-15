@@ -15,7 +15,7 @@ export function QuestsList() {
 
   useEffect(() => {
     loadQuests();
-  }, []);
+  }, [isDM]);
 
   const loadQuests = async () => {
     try {

@@ -1,6 +1,7 @@
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
-import { dbConfig } from './db'
+import './db'
+import { apiAuthMiddleware } from './middleware/apiAuth'
 import rolesRouter from './routes/roles'
 import usersRouter from './routes/users'
 import questsRouter from './routes/quests'
@@ -10,12 +11,12 @@ import npcsRouter from './routes/npcs'
 import itemsRouter from './routes/items'
 import questRewardsRouter from './routes/questRewards'
 import questCommentsRouter from './routes/questComments'
-
 const app = express()
 const PORT = Number(process.env.PORT) || 3001
 
 app.use(cors({ origin: true }))
 app.use(express.json())
+app.use(apiAuthMiddleware)
 
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
