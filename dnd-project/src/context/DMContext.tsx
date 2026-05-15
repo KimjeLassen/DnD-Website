@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { usersAPI } from '../services/api';
-import { 
-  setAccessToken, 
-  setRefreshToken, 
-  clearTokens, 
+import {
+  setAccessToken,
+  setRefreshToken,
+  clearTokens,
   hasValidAccessToken,
   getDecodedToken,
-  getAccessToken
+  getAccessToken,
 } from '../services/authUtils';
 
 export interface User {
@@ -17,8 +17,6 @@ export interface User {
 
 interface DMContextType {
   isDM: boolean;
-  unlockDM: () => void;
-  lockDM: () => void;
   isLoggedIn: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -28,55 +26,50 @@ interface DMContextType {
 
 const DMContext = createContext<DMContextType | undefined>(undefined);
 
+const isDungeonMaster = (role: string) => role === 'dungeon master';
+
 export function DMProvider({ children }: { children: ReactNode }) {
   const [isDM, setIsDM] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check if user is already logged in on mount
   useEffect(() => {
-    if (hasValidAccessToken()) {
-      const token = getAccessToken();
-      if (token) {
-        const decoded = getDecodedToken(token);
-        if (decoded) {
-          setCurrentUser({
-            id: decoded.userId || '',
-            name: decoded.username,
-            role: decoded.role
-          });
-          setIsLoggedIn(true);
-          if (decoded.role === 'dungeon master') {
-            setIsDM(true);
-          }
-        }
-      }
-    }
+    if (!hasValidAccessToken()) return;
+
+    const token = getAccessToken();
+    if (!token) return;
+
+    const decoded = getDecodedToken(token);
+    if (!decoded) return;
+
+    setCurrentUser({
+      id: decoded.userId || '',
+      name: decoded.username,
+      role: decoded.role,
+    });
+    setIsLoggedIn(true);
+    setIsDM(isDungeonMaster(decoded.role));
   }, []);
 
-  const unlockDM = () => setIsDM(true);
-  const lockDM = () => setIsDM(false);
-  
   const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
       const response = await usersAPI.login(username, password);
-      
-      // Store tokens
+
       setAccessToken(response.tokens.accessToken);
       if (response.tokens.refreshToken) {
         setRefreshToken(response.tokens.refreshToken);
       }
 
-      // Store user info
       setCurrentUser(response.user);
-      if (response.user.role === 'dungeon master') {
-        setIsDM(true);
-      }
+      setIsDM(isDungeonMaster(response.user.role));
       setIsLoggedIn(true);
     } catch (error) {
       clearTokens();
+      setIsDM(false);
+      setIsLoggedIn(false);
+      setCurrentUser(null);
       throw error;
     } finally {
       setIsLoading(false);
@@ -91,7 +84,9 @@ export function DMProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DMContext.Provider value={{ isDM, unlockDM, lockDM, isLoggedIn, login, logout, currentUser, isLoading }}>
+    <DMContext.Provider
+      value={{ isDM, isLoggedIn, login, logout, currentUser, isLoading }}
+    >
       {children}
     </DMContext.Provider>
   );

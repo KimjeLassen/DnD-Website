@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { DMProvider, useDM } from './context/DMContext';
 import { LoginPage } from './Pages/LoginPage';
@@ -8,7 +7,6 @@ import { NPCsPage } from './Pages/NPCsPage';
 import { CharactersPage } from './Pages/CharactersPage';
 import { QuestDetailPage } from './Pages/QuestDetailPage';
 import { UsersPage } from './Pages/UsersPage';
-import { DMPasswordModal } from './components/DMPasswordModal';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ProtectedDMRoute } from './components/ProtectedDMRoute';
 import './App.css';
@@ -16,9 +14,7 @@ import './App.css';
 function AppContent() {
   const navigate = useNavigate();
   const { isLoggedIn, logout, currentUser, isDM } = useDM();
-  const [isDMModalOpen, setIsDMModalOpen] = useState(false);
 
-  // If not logged in, don't show navbar
   if (!isLoggedIn) {
     return (
       <Routes>
@@ -56,10 +52,15 @@ function AppContent() {
         <div className="nav-user">
           <span className="user-name">{currentUser?.name}</span>
           {isDM && <span className="dm-badge">DM</span>}
-          <button className="logout-button" onClick={() => {
-            logout();
-            navigate('/login');
-          }}>Logout</button>
+          <button
+            className="logout-button"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+          >
+            Logout
+          </button>
         </div>
       </nav>
 
@@ -76,14 +77,9 @@ function AppContent() {
         </Routes>
       </main>
 
-      <footer className="footer" onClick={() => setIsDMModalOpen(true)} style={{ cursor: 'pointer' }}>
+      <footer className="footer">
         <p>&copy; 2024 D&D Campaign Manager. Created with React & TypeScript.</p>
       </footer>
-
-      <DMPasswordModal
-        isOpen={isDMModalOpen}
-        onClose={() => setIsDMModalOpen(false)}
-      />
     </div>
   );
 }

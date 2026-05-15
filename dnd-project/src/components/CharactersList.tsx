@@ -1,45 +1,50 @@
-import { useState, useEffect } from 'react';
-import type { Character, Campaign, User } from '../types';
-import { charactersAPI, campaignsAPI, usersAPI } from '../services/api';
+import { useState, useCallback } from 'react';
+import type { Character, User } from '../types';
+import { charactersAPI, usersAPI } from '../services/api';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 import '../styles/entities.css';
 import { useDM } from '../context/DMContext';
 
 export function CharactersList() {
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newCharacter, setNewCharacter] = useState({
-    name: "",
-    user_id: "",
-    campaign_id: "",
-    notes: "",
+    name: '',
+    user_id: '',
+    notes: '',
   });
   const { isDM } = useDM();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const loadData = useCallback(
+    async (isActive: () => boolean) => {
+      try {
+        setLoading(true);
+        const chars = await charactersAPI.getAll();
+        if (!isActive()) return;
+        setCharacters(chars);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [chars, camps, usrs] = await Promise.all([
-        charactersAPI.getAll(),
-        campaignsAPI.getAll(),
-        usersAPI.getAll(),
-      ]);
-      setCharacters(chars);
-      setCampaigns(camps);
-      setUsers(usrs);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (isDM) {
+          const usrs = await usersAPI.getAll();
+          if (!isActive()) return;
+          setUsers(usrs);
+        } else {
+          setUsers([]);
+        }
+
+        setError(null);
+      } catch (err) {
+        if (!isActive()) return;
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+      } finally {
+        if (isActive()) setLoading(false);
+      }
+    },
+    [isDM],
+  );
+
+  useAsyncEffect(loadData, [loadData]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,14 +54,13 @@ export function CharactersList() {
       const created = await charactersAPI.create({
         name: newCharacter.name,
         user_id: newCharacter.user_id,
-        campaign_id: newCharacter.campaign_id || undefined,
         notes: newCharacter.notes || undefined,
       });
-      setCharacters([...characters, created]);
-      setNewCharacter({ name: "", user_id: "", campaign_id: "", notes: "" });
+      setCharacters((prev) => [...prev, created]);
+      setNewCharacter({ name: '', user_id: '', notes: '' });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to create character",
+        err instanceof Error ? err.message : 'Failed to create character',
       );
     }
   };
@@ -64,24 +68,19 @@ export function CharactersList() {
   const handleDelete = async (id: string) => {
     try {
       await charactersAPI.delete(id);
-      setCharacters(characters.filter((char) => char.id !== id));
+      setCharacters((prev) => prev.filter((char) => char.id !== id));
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to delete character",
+        err instanceof Error ? err.message : 'Failed to delete character',
       );
     }
   };
 
-  const getCampaignName = (campaignId?: string) => {
-    if (!campaignId) return "No Campaign";
-    return campaigns.find((c) => c.id === campaignId)?.name || "Unknown";
-  };
-
   const getUserName = (userId: string) => {
-    return users.find((u) => u.id === userId)?.name || "Unknown";
+    return users.find((u) => u.id === userId)?.name || 'Unknown';
   };
 
-  if (loading) return <div style={{color: "black"}}>Loading characters...</div>;
+  if (loading) return <div style={{ color: 'black' }}>Loading characters...</div>;
 
   return (
     <div className="entities-container">
@@ -114,19 +113,6 @@ export function CharactersList() {
               </option>
             ))}
           </select>
-          <select
-            value={newCharacter.campaign_id}
-            onChange={(e) =>
-              setNewCharacter({ ...newCharacter, campaign_id: e.target.value })
-            }
-          >
-            <option value="">Select a Campaign (Optional)</option>
-            {campaigns.map((campaign) => (
-              <option key={campaign.id} value={campaign.id}>
-                {campaign.name}
-              </option>
-            ))}
-          </select>
           <textarea
             placeholder="Character Notes"
             value={newCharacter.notes}
@@ -139,35 +125,29 @@ export function CharactersList() {
       )}
 
       <div className="entities-list">
-        {(
-          characters.map((character) => (
-            <div key={character.id} className="entity-card">
-              <div className="entity-header">
-                <h3>{character.name}</h3>
-                {isDM && (
-                  <button
-                    onClick={() => handleDelete(character.id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-              <p>
-                <strong>Player:</strong> {getUserName(character.user_id)}
-              </p>
-              <p>
-                <strong>Campaign:</strong>{" "}
-                {getCampaignName(character.campaign_id)}
-              </p>
-              {character.notes && (
-                <p>
-                  <strong>Notes:</strong> {character.notes}
-                </p>
+        {characters.map((character) => (
+          <div key={character.id} className="entity-card">
+            <div className="entity-header">
+              <h3>{character.name}</h3>
+              {isDM && (
+                <button
+                  onClick={() => handleDelete(character.id)}
+                  className="delete-btn"
+                >
+                  Delete
+                </button>
               )}
             </div>
-          ))
-        )}
+            <p>
+              <strong>Player:</strong> {getUserName(character.user_id)}
+            </p>
+            {character.notes && (
+              <p>
+                <strong>Notes:</strong> {character.notes}
+              </p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

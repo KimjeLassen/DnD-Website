@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { QuestNote } from '../types';
 import { questCommentsAPI } from '../services/api';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 import { useDM } from '../context/DMContext';
 import '../styles/comments.css';
 
@@ -13,41 +14,45 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const { isDM } = useDM();
 
-  useEffect(() => {
-    loadNotes();
-  }, [questId]);
+  const loadNotes = useCallback(
+    async (isActive: () => boolean) => {
+      try {
+        setLoading(true);
+        const data = await questCommentsAPI.getByQuestId(questId);
+        if (!isActive()) return;
+        setNotes(data);
+        setError(null);
+      } catch (err) {
+        if (!isActive()) return;
+        setError(err instanceof Error ? err.message : 'Failed to load notes');
+      } finally {
+        if (isActive()) setLoading(false);
+      }
+    },
+    [questId],
+  );
 
-  const loadNotes = async () => {
-    try {
-      setLoading(true);
-      const data = await questCommentsAPI.getByQuestId(questId);
-      setNotes(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load notes');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useAsyncEffect(loadNotes, [loadNotes]);
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNoteText.trim()) return;
 
     try {
-      setIsSubmitting(true);
+      setIsAdding(true);
       const newNote = await questCommentsAPI.create(questId, newNoteText);
-      setNotes([newNote, ...notes]);
+      setNotes((prev) => [newNote, ...prev]);
       setNewNoteText('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add note');
     } finally {
-      setIsSubmitting(false);
+      setIsAdding(false);
     }
   };
 
@@ -55,15 +60,19 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
     if (!editingText.trim()) return;
 
     try {
-      setIsSubmitting(true);
-      const updatedNote = await questCommentsAPI.update(questId, noteId, editingText);
-      setNotes(notes.map(n => n.id === noteId ? updatedNote : n));
+      setIsEditing(true);
+      const updatedNote = await questCommentsAPI.update(
+        questId,
+        noteId,
+        editingText,
+      );
+      setNotes((prev) => prev.map((n) => (n.id === noteId ? updatedNote : n)));
       setEditingId(null);
       setEditingText('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update note');
     } finally {
-      setIsSubmitting(false);
+      setIsEditing(false);
     }
   };
 
@@ -72,7 +81,7 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
 
     try {
       await questCommentsAPI.delete(questId, noteId);
-      setNotes(notes.filter(n => n.id !== noteId));
+      setNotes((prev) => prev.filter((n) => n.id !== noteId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete note');
     }
@@ -89,7 +98,11 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
   };
 
   if (loading) {
-    return <div className="notes-section"><div className="loading">Loading notes...</div></div>;
+    return (
+      <div className="notes-section">
+        <div className="loading">Loading notes...</div>
+      </div>
+    );
   }
 
   return (
@@ -104,14 +117,14 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
           onChange={(e) => setNewNoteText(e.target.value)}
           placeholder="Add a note..."
           rows={3}
-          disabled={isSubmitting}
+          disabled={isAdding}
         />
         <button
           type="submit"
           className="btn-submit-note"
-          disabled={!newNoteText.trim() || isSubmitting}
+          disabled={!newNoteText.trim() || isAdding}
         >
-          {isSubmitting ? 'Saving...' : 'Save Note'}
+          {isAdding ? 'Saving...' : 'Save Note'}
         </button>
       </form>
 
@@ -127,20 +140,20 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
                     value={editingText}
                     onChange={(e) => setEditingText(e.target.value)}
                     rows={3}
-                    disabled={isSubmitting}
+                    disabled={isEditing}
                   />
                   <div className="note-edit-actions">
                     <button
                       onClick={() => handleUpdateNote(note.id)}
                       className="btn-save-note"
-                      disabled={isSubmitting}
+                      disabled={isEditing}
                     >
-                      {isSubmitting ? 'Saving...' : 'Save'}
+                      {isEditing ? 'Saving...' : 'Save'}
                     </button>
                     <button
                       onClick={cancelEditing}
                       className="btn-cancel-note"
-                      disabled={isSubmitting}
+                      disabled={isEditing}
                     >
                       Cancel
                     </button>
@@ -150,12 +163,13 @@ export function QuestCommentsSection({ questId }: QuestNotesSectionProps) {
                 <>
                   <div className="note-header">
                     <span className="note-date">
-                      {new Date(note.created_at).toLocaleDateString()} at {new Date(note.created_at).toLocaleTimeString()}
+                      {new Date(note.created_at).toLocaleDateString()} at{' '}
+                      {new Date(note.created_at).toLocaleTimeString()}
                     </span>
                     {note.updated_at !== note.created_at && (
                       <span className="note-edited">(edited)</span>
                     )}
-                    <span className= "note-date">{note.user_name}</span>
+                    <span className="note-date">{note.user_name}</span>
                   </div>
                   <p className="note-text">{note.text}</p>
                   {isDM && (

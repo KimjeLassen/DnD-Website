@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { usersAPI, rolesAPI } from '../services/api';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 import type { User, Role } from '../types';
 import '../styles/users.css';
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     password: '',
@@ -18,34 +19,34 @@ export function UsersPage() {
     role_id: '',
   });
 
-  useEffect(() => {
-    loadUsersAndRoles();
-  }, []);
-
-  const loadUsersAndRoles = async () => {
+  const loadUsersAndRoles = useCallback(async (isActive: () => boolean) => {
     try {
-      setIsLoading(true);
+      setIsPageLoading(true);
       const [usersData, rolesData] = await Promise.all([
         usersAPI.getAll(),
         rolesAPI.getAll(),
       ]);
+      if (!isActive()) return;
       setUsers(usersData);
       setRoles(rolesData);
       if (rolesData.length > 0) {
-        setFormData(prev => ({ ...prev, role_id: rolesData[0].id }));
+        setFormData((prev) => ({ ...prev, role_id: rolesData[0].id }));
       }
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setIsLoading(false);
+      if (isActive()) setIsPageLoading(false);
     }
-  };
+  }, []);
+
+  useAsyncEffect(loadUsersAndRoles, [loadUsersAndRoles]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -56,7 +57,6 @@ export function UsersPage() {
     setError(null);
     setSuccess(null);
 
-    // Validation
     if (!formData.name || !formData.password || !formData.role_id) {
       setError('Please fill in all required fields');
       return;
@@ -73,7 +73,7 @@ export function UsersPage() {
     }
 
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       await usersAPI.create({
         name: formData.name,
         password: formData.password,
@@ -88,18 +88,26 @@ export function UsersPage() {
         role_id: roles[0]?.id || '',
       });
 
-      // Reload users
-      await loadUsersAndRoles();
+      const usersData = await usersAPI.getAll();
+      setUsers(usersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create user');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const getRoleName = (roleId: string) => {
-    return roles.find(r => r.id === roleId)?.name || roleId;
+    return roles.find((r) => r.id === roleId)?.name || roleId;
   };
+
+  if (isPageLoading) {
+    return (
+      <div className="users-page">
+        <div className="users-container">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="users-page">
@@ -125,7 +133,7 @@ export function UsersPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter username"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -139,7 +147,7 @@ export function UsersPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Enter password (min 6 characters)"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -153,7 +161,7 @@ export function UsersPage() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Confirm password"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -165,11 +173,11 @@ export function UsersPage() {
                   name="role_id"
                   value={formData.role_id}
                   onChange={handleInputChange}
-                  disabled={isLoading || roles.length === 0}
+                  disabled={isSubmitting || roles.length === 0}
                   required
                 >
                   <option value="">Select a role</option>
-                  {roles.map(role => (
+                  {roles.map((role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}
                     </option>
@@ -180,9 +188,9 @@ export function UsersPage() {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? 'Creating...' : 'Create User'}
+                {isSubmitting ? 'Creating...' : 'Create User'}
               </button>
             </form>
           </div>
@@ -202,11 +210,13 @@ export function UsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(user => (
+                    {users.map((user) => (
                       <tr key={user.id}>
                         <td>{user.name}</td>
                         <td>{getRoleName(user.role_id)}</td>
-                        <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
